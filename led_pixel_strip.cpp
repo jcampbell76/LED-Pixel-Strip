@@ -45,6 +45,10 @@ void LEDDisp::dispWrite()
 
 
 void LEDDisp::_sendPixel(uint32_t data)
+// note:  each nop is 62.5 ns in length thus
+//        28*62.5 = 1750 ns (1.75 us) 
+//         9*62.5 = 562.5 ns
+//         3*62.5 = 187.5 ns
 {
   int i;
   unsigned long j=0x800000;
@@ -53,6 +57,7 @@ void LEDDisp::_sendPixel(uint32_t data)
   {
     if (data & j)
     {
+//        28*62.5 = 1750 ns (1.75 us) 
       DATA_1;
       __asm__("nop\n\t");
       __asm__("nop\n\t");
@@ -89,6 +94,7 @@ void LEDDisp::_sendPixel(uint32_t data)
     }
     else
     {
+      //   9*62.5 = 562.5 ns
       DATA_1;
       __asm__("nop\n\t");
       __asm__("nop\n\t");
@@ -101,6 +107,7 @@ void LEDDisp::_sendPixel(uint32_t data)
       __asm__("nop\n\t");    
       DATA_0;
       /*----------------------------*/
+     //     3*62.5 = 187.5 ns
       __asm__("nop\n\t");
       __asm__("nop\n\t");
       __asm__("nop\n\t");      
