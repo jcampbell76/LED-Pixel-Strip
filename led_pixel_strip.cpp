@@ -11,7 +11,43 @@
 #include<Arduino.h>
 #include<led_pixel_strip.h>
 
+void FXScan::propogateAndSet(uint16_t time_now)
+{
+  int dt = time_now - _time_past;
+  _time_past = time_now;
+  _pos = _pos + (dt * _vel);
+  _disp->_displayBuff[_pos] = _color; 
+  if(_pos >= int(_dispSize)-1){ //if at the end of the string start over
+    _vel *= -1;
+  }
+  if(_pos <= 0){  //if at the start of the string start over (negative velocities)
+    _vel *= -1;
+  }
+}
 
+void FXChase::propogateAndSet(uint16_t time_now)
+{
+  int dt = time_now - _time_past;
+  _time_past = time_now;
+  _pos = _pos + (dt * _vel);
+ if(_pos >= int(_dispSize)){ //if at the end of the string start over
+   _pos = 0;
+ }
+ if(_pos < 0){  //if at the start of the string start over (negative velocities)
+   _pos = _dispSize ;
+ }
+ _disp->_displayBuff[_pos] = _color; 
+
+
+}
+
+void FXSetAll::setColor(uint32_t color)
+{
+  int ii;
+  for(ii=0; ii< _dispSize; ii++){
+    _disp->_displayBuff[ii] = color;
+  }
+}
 
 void LEDDisp::addOverlay()
 {
