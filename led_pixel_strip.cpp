@@ -11,13 +11,13 @@
 #include<Arduino.h>
 #include<led_pixel_strip.h>
 
-void FXScan::propogateAndSet(uint16_t time_now)
+void FXScan::propogateAndSet(uint32_t time_now)
 {
-  int dt = time_now - _time_past;
+  int32_t dt = time_now - _time_past;
   _time_past = time_now;
   _pos = _pos + (dt * _vel);
-  _disp->_displayBuff[_pos] = _color; 
-  if(_pos >= int(_dispSize)-1){ //if at the end of the string start over
+  _disp->_displayBuff[_pos/kPIXEL2POS] = _color; 
+  if(_pos >= int32_t(_dispSize)-1){ //if at the end of the string start over
     _vel *= -1;
   }
   if(_pos <= 0){  //if at the start of the string start over (negative velocities)
@@ -25,18 +25,18 @@ void FXScan::propogateAndSet(uint16_t time_now)
   }
 }
 
-void FXChase::propogateAndSet(uint16_t time_now)
+void FXChase::propogateAndSet(uint32_t time_now)
 {
-  int dt = time_now - _time_past;
+  int32_t dt = time_now - _time_past;
   _time_past = time_now;
   _pos = _pos + (dt * _vel);
- if(_pos >= int(_dispSize)){ //if at the end of the string start over
+ if(_pos >= int32_t(_dispSize)){ //if at the end of the string start over
    _pos = 0;
  }
  if(_pos < 0){  //if at the start of the string start over (negative velocities)
    _pos = _dispSize ;
  }
- _disp->_displayBuff[_pos] = _color; 
+ _disp->_displayBuff[_pos/kPIXEL2POS] = _color; 
 
 
 }
@@ -44,7 +44,7 @@ void FXChase::propogateAndSet(uint16_t time_now)
 void FXSetAll::setColor(uint32_t color)
 {
   int ii;
-  for(ii=0; ii< _dispSize; ii++){
+  for(ii=0; ii< _numPixels; ii++){
     _disp->_displayBuff[ii] = color;
   }
 }
@@ -59,7 +59,7 @@ void LEDDisp::addOverlay()
 
 void LEDDisp::setBackColor(uint32_t backColor)
 {
-  int ii;
+  int32_t ii;
   for(ii=0;ii<_numPixels;ii++){
     _displayBuff[ii] = backColor;
   } 
@@ -68,7 +68,7 @@ void LEDDisp::setBackColor(uint32_t backColor)
 
 void LEDDisp::dispWrite()
 {
-  int ii;
+  int32_t ii;
 
   noInterrupts();
   for (ii=0;ii<_numPixels;ii++)
@@ -86,8 +86,8 @@ void LEDDisp::_sendPixel(uint32_t data)
 //         9*62.5 = 562.5 ns
 //         3*62.5 = 187.5 ns
 {
-  int i;
-  unsigned long j=0x800000;
+  int16_t i;
+  uint32_t j=0x800000;
 
   for (i=0;i<24;i++)
   {

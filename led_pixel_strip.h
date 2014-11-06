@@ -26,7 +26,7 @@ const uint32_t kRED = 0x0000FF;
 const uint32_t kGREEN = 0xFF0000;
 const uint32_t kBLUE = 0x00FF00;
 
-
+const int32_t kPIXEL2POS = 1000;  /** Multiplier to convert pixels to a position */  
 
 /** Handles modifications to the display buffer and sends display buffer to LED pixel strip.
  *
@@ -72,7 +72,7 @@ public:
   void setBackColor(uint32_t);
 
   uint32_t* _displayBuff; /** display buffer */
-  uint16_t _numPixels;  /** number of pixels defined at object creation */
+  uint32_t _numPixels;  /** number of pixels defined at object creation */
 private:
 
  
@@ -99,7 +99,7 @@ class FXSetAll{
   /**
    *  Constructor that ties the effect to a display 
    */ 
-  FXSetAll(LEDDisp* disp){_disp = disp; _dispSize = disp->_numPixels;}
+  FXSetAll(LEDDisp* disp){_disp = disp; _numPixels = disp->_numPixels;}
 
   /**
    *  Given a color, set the associated display's buffer all to that color
@@ -107,7 +107,7 @@ class FXSetAll{
   void setColor(uint32_t);
   private:
   LEDDisp* _disp;
-  uint16_t _dispSize;
+  uint32_t _numPixels;
 };
 
 
@@ -118,34 +118,42 @@ class FXSetAll{
  * provide a chase pattern that updates by calling
  * the propagate function
  */
-class FXChase
+class FXChase 
 {
 public:
   /**
    *  Default Constructor
    */
   FXChase(){}
-  FXChase(LEDDisp *disp, int16_t initPos, int16_t initVel, uint32_t initColor)
+  /**
+   *  Initialize FX Chase object given a pointer to a display object,
+   *  the initial Pixel to start on, initial velocity, and initial color
+   *  
+   *  To avoid using floating point operations, the _pos (position) member
+   *  is scaled up by kPIXEL2POS and velocity is in 'units' of position/t 
+   *  vs. pixel/t
+   */
+  FXChase(LEDDisp *disp, int32_t initPixel, int32_t initVel, uint32_t initColor) 
   { 
     _disp = disp;
-    _dispSize = disp->_numPixels;    
-    _pos = initPos;
+    _dispSize = disp->_numPixels * kPIXEL2POS;    
+    _pos = initPixel * kPIXEL2POS;
     _vel = initVel;
     _color = initColor;
   }
-  void propogateAndSet(uint16_t time_now);
-  void setVel(int16_t vel);
-  int16_t getVel();
-  void setPos(int16_t pos);
-  int16_t getPos();
-  void setColor(uint32_t color);
-  uint32_t getColor();
+  void propogateAndSet(uint32_t time_now);
+  void setVel(int32_t vel); /** set velocity */
+  int32_t getVel();         /** get velocity */
+  void setPos(int32_t pos); /** set position */
+  int32_t getPos();         /** get position */
+  void setColor(uint32_t color); /**set color */
+  uint32_t getColor();  /** get color */
 
 private:
   LEDDisp* _disp;
-  uint16_t _dispSize;
-  int16_t _pos;
-  int16_t _vel;  /** speed and direction of chase */
+  uint32_t _dispSize; /** size of the display = number of pixels * kPIXEL2POS */
+  int32_t _pos;  /** position of the object _pos/kPIXEL2POS = Pixel position */
+  int32_t _vel;  /** speed and direction of chase */
   uint32_t _color; 
   int _time_past; 
 
@@ -155,39 +163,22 @@ private:
  * Scan Effects Class - Scanning pixels
  *
  * Given an initial position and velocity 
- * provide a scan pattern that updates by calling
+ * provide a scan pattern (think Kit from Knight Rider) that updates by calling
  * the propagate function
+ * 
+ * inherited from the FXChase class - propogateAndSet is overloaded
  */
-class FXScan
+class FXScan : public FXChase
 {
 public:
   /**
    *  Default Constructor
    */
   FXScan(){}
-  FXScan(LEDDisp *disp, int16_t initPos, int16_t initVel, uint32_t initColor)
-  { 
-    _disp = disp;
-    _dispSize = disp->_numPixels;    
-    _pos = initPos;
-    _vel = initVel;
-    _color = initColor;
-  }
-  void propogateAndSet(uint16_t time_now);
-  void setVel(int16_t vel);
-  int16_t getVel();
-  void setPos(int16_t pos);
-  int16_t getPos();
-  void setColor(uint32_t color);
-  uint32_t getColor();
+  FXScan(LEDDisp *disp, int32_t initPixel, int32_t initVel, uint32_t initColor) : FXChase(disp, initPixel, initVel, initColor){}
+  void propogateAndSet(uint32_t time_now); //overload the propogate
 
 private:
-  LEDDisp* _disp;
-  uint16_t _dispSize;
-  int16_t _pos;
-  int16_t _vel;  /** speed and direction of chase */
-  uint32_t _color; 
-  int _time_past; 
 
 };
 
