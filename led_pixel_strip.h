@@ -26,7 +26,7 @@ const uint32_t kRED = 0x0000FF;
 const uint32_t kGREEN = 0xFF0000;
 const uint32_t kBLUE = 0x00FF00;
 
-const int32_t kPIXEL2POS = 1000;  /** Multiplier to convert pixels to a position */  
+const int32_t kPIXEL2POS = 500;  /** Multiplier to convert pixels to a position */  
 
 /** Handles modifications to the display buffer and sends display buffer to LED pixel strip.
  *
@@ -110,6 +110,33 @@ class FXSetAll{
   uint32_t _numPixels;
 };
 
+/** Effect to randomly flash a pixels
+ */
+class FXSparkle{
+  public:
+  /**
+   *  Default Constructor
+   */ 
+  FXSparkle(){}  //default constructor
+  /**
+   *  Constructor that ties the effect to a display 
+   */ 
+  FXSparkle(LEDDisp* disp, uint32_t aveRate, uint32_t onPeriod, uint32_t color){_disp = disp; _aveRate = aveRate; _onPeriod = onPeriod; _color = color; _fgPixelOn = false; _onTime = 0;}
+
+  void sparkle(uint32_t time);
+  /**
+   *  Given a color, set the associated display's buffer all to that color
+   */ 
+  void setColor(uint32_t color);
+  private:
+  LEDDisp* _disp;
+  uint32_t _aveRate;
+  uint32_t _onPeriod;
+  uint32_t _color;
+  byte _fgPixelOn;
+  uint32_t _onTime;
+  uint32_t _pastTime;
+};
 
 /** 
  * Chase Effects Class - chasing pixels
@@ -149,13 +176,13 @@ public:
   void setColor(uint32_t color); /**set color */
   uint32_t getColor();  /** get color */
 
-private:
+protected:
   LEDDisp* _disp;
   uint32_t _dispSize; /** size of the display = number of pixels * kPIXEL2POS */
   int32_t _pos;  /** position of the object _pos/kPIXEL2POS = Pixel position */
   int32_t _vel;  /** speed and direction of chase */
   uint32_t _color; 
-  int _time_past; 
+  int _timePast; 
 
 };
 

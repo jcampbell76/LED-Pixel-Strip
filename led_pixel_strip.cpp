@@ -11,10 +11,20 @@
 #include<Arduino.h>
 #include<led_pixel_strip.h>
 
-void FXScan::propogateAndSet(uint32_t time_now)
+void FXSparkle::sparkle(uint32_t timeNow)
 {
-  int32_t dt = time_now - _time_past;
-  _time_past = time_now;
+  if(_fgPixelOn == true){
+    _onTime += timeNow - _pastTime;
+    if(_onTime > _onPeriod){ //if true turn off pixel
+      //t
+    }
+  }
+}
+
+void FXScan::propogateAndSet(uint32_t timeNow)
+{
+  int32_t dt = timeNow - _timePast;
+  _timePast = timeNow;
   _pos = _pos + (dt * _vel);
   _disp->_displayBuff[_pos/kPIXEL2POS] = _color; 
   if(_pos >= int32_t(_dispSize)-1){ //if at the end of the string start over
@@ -25,10 +35,10 @@ void FXScan::propogateAndSet(uint32_t time_now)
   }
 }
 
-void FXChase::propogateAndSet(uint32_t time_now)
+void FXChase::propogateAndSet(uint32_t timeNow)
 {
-  int32_t dt = time_now - _time_past;
-  _time_past = time_now;
+  int32_t dt = timeNow - _timePast;
+  _timePast = timeNow;
   _pos = _pos + (dt * _vel);
  if(_pos >= int32_t(_dispSize)){ //if at the end of the string start over
    _pos = 0;
