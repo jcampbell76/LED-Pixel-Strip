@@ -16,18 +16,19 @@
 #define LED_PIXEL_STRIP
 
 #include<Arduino.h>
+#include<colors_32.h>
 
 #define DATA_1 (PORTC |=  0X01)    // DATA 1    // for UNO
 #define DATA_0 (PORTC &=  0XFE)    // DATA 0    // for UNO
 #define STRIP_PINOUT (DDRC=0xFF)    // for UNO
 
 
-const uint32_t kRED = 0x0000FF;
-const uint32_t kGREEN = 0xFF0000;
-const uint32_t kBLUE = 0x00FF00;
+//const uint32_t kRED = 0x0000FF;
+//const uint32_t kGREEN = 0xFF0000;
+//const uint32_t kBLUE = 0x00FF00;
 
 const int32_t kPIXEL2POS = 500;  /** Multiplier to convert pixels to a position */  
-
+/* the use of the multiplier allows for 'subpixel' resolution on calculations w/o floating point */
 /** Handles modifications to the display buffer and sends display buffer to LED pixel strip.
  *
  */
@@ -121,9 +122,9 @@ class FXSparkle{
   /**
    *  Constructor that ties the effect to a display 
    */ 
-  FXSparkle(LEDDisp* disp, uint32_t aveRate, uint32_t onPeriod, uint32_t color){_disp = disp; _aveRate = aveRate; _onPeriod = onPeriod; _color = color; _fgPixelOn = false; _onTime = 0;}
+  FXSparkle(LEDDisp* disp, uint32_t aveRate, uint32_t onPeriod, uint32_t color){_disp = disp; _aveRate = aveRate; _onPeriod = onPeriod; _color = color; _fgPixelOn = false; _onTime = 0; _offTime = 0; _offPeriod = random(_aveRate*2); _pixelPos = random(disp->_numPixels);}
 
-  void sparkle(uint32_t time);
+  void sparkle(uint32_t dt);
   /**
    *  Given a color, set the associated display's buffer all to that color
    */ 
@@ -135,7 +136,9 @@ class FXSparkle{
   uint32_t _color;
   byte _fgPixelOn;
   uint32_t _onTime;
-  uint32_t _pastTime;
+  uint32_t _offTime;
+  uint32_t _offPeriod;
+  uint32_t _pixelPos;
 };
 
 /** 
@@ -168,7 +171,7 @@ public:
     _vel = initVel;
     _color = initColor;
   }
-  void propogateAndSet(uint32_t time_now);
+  void propogateAndSet(uint32_t dt);
   void setVel(int32_t vel); /** set velocity */
   int32_t getVel();         /** get velocity */
   void setPos(int32_t pos); /** set position */
@@ -182,7 +185,6 @@ protected:
   int32_t _pos;  /** position of the object _pos/kPIXEL2POS = Pixel position */
   int32_t _vel;  /** speed and direction of chase */
   uint32_t _color; 
-  int _timePast; 
 
 };
 
@@ -203,7 +205,7 @@ public:
    */
   FXScan(){}
   FXScan(LEDDisp *disp, int32_t initPixel, int32_t initVel, uint32_t initColor) : FXChase(disp, initPixel, initVel, initColor){}
-  void propogateAndSet(uint32_t time_now); //overload the propogate
+  void propogateAndSet(uint32_t dt); //overload the propogate
 
 private:
 

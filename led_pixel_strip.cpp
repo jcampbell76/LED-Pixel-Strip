@@ -11,20 +11,32 @@
 #include<Arduino.h>
 #include<led_pixel_strip.h>
 
-void FXSparkle::sparkle(uint32_t timeNow)
+void FXSparkle::sparkle(uint32_t dt)
 {
-  if(_fgPixelOn == true){
-    _onTime += timeNow - _pastTime;
-    if(_onTime > _onPeriod){ //if true turn off pixel
-      //t
+  if(_fgPixelOn == false){
+    _offTime += dt;
+    if(_offTime > _offPeriod){  //if true turn on pixel
+      _fgPixelOn = true;
+      _offTime = 0;
+      _pixelPos = random(_disp->_numPixels);
     }
+  }
+
+  if(_fgPixelOn == true){
+    _onTime += dt;
+    if(_onTime > _onPeriod){ //if true turn off pixel
+      _fgPixelOn = false;
+      _onTime = 0;
+      _offPeriod = random(_aveRate * 2);
+    } else {
+      _disp->_displayBuff[_pixelPos] = _color;
+    }
+      
   }
 }
 
-void FXScan::propogateAndSet(uint32_t timeNow)
+void FXScan::propogateAndSet(uint32_t dt)
 {
-  int32_t dt = timeNow - _timePast;
-  _timePast = timeNow;
   _pos = _pos + (dt * _vel);
   _disp->_displayBuff[_pos/kPIXEL2POS] = _color; 
   if(_pos >= int32_t(_dispSize)-1){ //if at the end of the string start over
@@ -35,10 +47,8 @@ void FXScan::propogateAndSet(uint32_t timeNow)
   }
 }
 
-void FXChase::propogateAndSet(uint32_t timeNow)
+void FXChase::propogateAndSet(uint32_t dt)
 {
-  int32_t dt = timeNow - _timePast;
-  _timePast = timeNow;
   _pos = _pos + (dt * _vel);
  if(_pos >= int32_t(_dispSize)){ //if at the end of the string start over
    _pos = 0;
@@ -63,7 +73,7 @@ void LEDDisp::addOverlay()
 {
   int ii;
   for(ii=0;ii<_numPixels;ii++){
-    _displayBuff[ii] = kGREEN;
+    _displayBuff[ii] = 0x000000;
   } 
 }
 
