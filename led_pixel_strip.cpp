@@ -39,7 +39,7 @@ void FXScan::propogateAndSet(uint32_t dt)
 {
   _pos = _pos + (dt * _vel);
   _disp->_displayBuff[_pos/kPIXEL2POS] = _color; 
-  if(_pos >= int32_t(_dispSize)-1){ //if at the end of the string start over
+  if(_pos > int32_t(_dispSize)-1){ //if at the end of the string start over
     _vel *= -1;
   }
   if(_pos <= 0){  //if at the start of the string start over (negative velocities)
@@ -114,7 +114,8 @@ void LEDDisp::_sendPixel(uint32_t data)
     if (data & j)
     {
 //        28*62.5 = 1750 ns (1.75 us) 
-      DATA_1;
+
+      PORTC |= _outBit;
       __asm__("nop\n\t");
       __asm__("nop\n\t");
       __asm__("nop\n\t");
@@ -146,12 +147,14 @@ void LEDDisp::_sendPixel(uint32_t data)
       __asm__("nop\n\t");  
       __asm__("nop\n\t");        
       /*----------------------------*/
-      DATA_0;
+      //DATA_0;
+      PORTC &= !_outBit;
     }
     else
     {
       //   9*62.5 = 562.5 ns
-      DATA_1;
+      //DATA_1;
+      PORTC |= _outBit;
       __asm__("nop\n\t");
       __asm__("nop\n\t");
       __asm__("nop\n\t");
@@ -161,7 +164,8 @@ void LEDDisp::_sendPixel(uint32_t data)
       __asm__("nop\n\t");
       __asm__("nop\n\t");
       __asm__("nop\n\t");    
-      DATA_0;
+      //DATA_0;
+      PORTC &= !_outBit;
       /*----------------------------*/
      //     3*62.5 = 187.5 ns
       __asm__("nop\n\t");

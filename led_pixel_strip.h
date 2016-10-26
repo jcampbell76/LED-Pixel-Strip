@@ -18,9 +18,16 @@
 #include<Arduino.h>
 #include<colors_32.h>
 
-#define DATA_1 (PORTC |=  0X01)    // DATA 1    // for UNO
-#define DATA_0 (PORTC &=  0XFE)    // DATA 0    // for UNO
+#define DATA_1 (PORTC |=  0X0F)    // DATA 1    // for UNO
+#define DATA_0 (PORTC &=  0XF0)    // DATA 0    // for UNO
 #define STRIP_PINOUT (DDRC=0xFF)    // for UNO
+
+const uint8_t kA0 = 0x01;
+const uint8_t kA1 = 0x02;
+const uint8_t kA2 = 0x04;
+const uint8_t kA3 = 0x08;
+const uint8_t kA4 = 0x10;
+const uint8_t kA5 = 0x20;
 
 
 //const uint32_t kRED = 0x0000FF;
@@ -43,10 +50,11 @@ public:
    *  
    *  @param Number of pixels in LED light strip
    */ 
-  LEDDisp(int numPixelsToCreate)
+  LEDDisp(int numPixelsToCreate, uint8_t channelName)
   {
     _displayBuff = new uint32_t[numPixelsToCreate];
     _numPixels = numPixelsToCreate;
+    _outBit = channelName;
   }
   /**
    *  Delete the internal display buffer 
@@ -84,7 +92,7 @@ private:
    * @todo see if pwm generator on arduio would work vs bit bang
    * @param the display buffer
    */
-
+  uint8_t _outBit;
   void _sendPixel(uint32_t);
 };
 
